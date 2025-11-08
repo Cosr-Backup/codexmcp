@@ -59,7 +59,7 @@ claude mcp remove codex
 **1.2** Install CodexMCP.
 
 ```bash
-claude mcp add codex --transport stdio -- uvx --from git+https://github.com/GuDaStudio/codexmcp.git codexmcp
+claude mcp add codex -s user --transport stdio -- uvx --from git+https://github.com/GuDaStudio/codexmcp.git codexmcp
 ```
 
 **1.3** Verify the installation. Run in your **terminal**:
