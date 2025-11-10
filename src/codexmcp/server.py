@@ -119,7 +119,7 @@ async def codex(
     skip_git_repo_check: Annotated[
         bool,
         "Allow codex running outside a Git repository (useful for one-off directories).",
-    ] = True,
+    ] = False,
     return_all_messages: Annotated[
         bool,
         "Return all messages (e.g. reasoning, tool calls, etc.) from the codex session. Set to `False` by default, only the agent's final reply message is returned.",
@@ -127,13 +127,15 @@ async def codex(
 ) -> Dict[str, Any]:
     """Execute a Codex CLI session and return the results."""
     # Build command as list to avoid injection
-    cmd = ["codex", "exec", PROMPT, "--sandbox", sandbox, "--cd", str(cd), "--json"]
+    cmd = ["codex", "exec", "--sandbox", sandbox, "--cd", str(cd), "--json"]
     
     if skip_git_repo_check:
         cmd.append("--skip-git-repo-check")
 
     if SESSION_ID is not None:
         cmd.extend(["resume", str(SESSION_ID)])
+        
+    cmd += ['--', PROMPT]
 
     all_messages: list[Dict[str, Any]] = []
     agent_messages = ""
