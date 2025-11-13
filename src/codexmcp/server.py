@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ast import List
 import json
 import os
 import queue
@@ -148,10 +149,37 @@ async def codex(
         bool,
         "Return all messages (e.g. reasoning, tool calls, etc.) from the codex session. Set to `False` by default, only the agent's final reply message is returned.",
     ] = False,
+    image: Annotated[
+        Optional[List[Path]],
+        Field(
+            description="Attach one or more image files to the initial prompt. Separate multiple paths with commas or repeat the flag.",
+        ),
+    ] = None,
+    model: Annotated[
+        Optional[str],
+        Field(
+            description="The model to use for the codex session. Default user configuration is applied; this parameter remains inactive unless explicitly specified by the user.",
+        ),
+    ] = None,
+    yolo: Annotated[
+        Optional[bool],
+        Field(
+            description="Run every command without approvals or sandboxing. Only use when `sandbox` couldn't be applied.",
+        ),
+    ] = False,
 ) -> Dict[str, Any]:
     """Execute a Codex CLI session and return the results."""
     # Build command as list to avoid injection
     cmd = ["codex", "exec", "--sandbox", sandbox, "--cd", str(cd), "--json"]
+    
+    if image is not None:
+        cmd.extend(["--image", ",".join(image)])
+        
+    if model is not None:
+        cmd.extend(["--model", model])
+        
+    if yolo:
+        cmd.append("--yolo")
     
     if skip_git_repo_check:
         cmd.append("--skip-git-repo-check")
