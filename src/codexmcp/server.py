@@ -210,11 +210,18 @@ async def codex(
             line_dict = json.loads(line.strip())
             all_messages.append(line_dict)
             item = line_dict.get("item", {})
-            item_type = item.get("type")
+            item_type = item.get("type", "")
             if item_type == "agent_message":
                 agent_messages = agent_messages + item.get("text", "")
             if line_dict.get("thread_id") is not None:
                 thread_id = line_dict.get("thread_id")
+            if "fail" in line_dict.get("type", ""):
+                success = False
+                err_message = "codex error: " + line_dict.get("error", {}).get("message", "")
+                break
+            if "error" in line_dict.get("type", ""):
+                success = False
+                err_message = "codex error: " + line_dict.get("message", "")   
         except json.JSONDecodeError as error:
             # Improved error handling: include problematic line
             err_message = line
@@ -225,13 +232,13 @@ async def codex(
             success = False
             break
 
-    if thread_id is None:
+    if success and thread_id is None:
         success = False
         err_message = "Failed to get `SESSION_ID` from the codex session. \n\n" + err_message
         
     if success and len(agent_messages) == 0:
         success = False
-        err_message = "Failed to get `agent_messages` from the codex session. \n\nYou can try to set `return_all_messages` to `True` to get the full reasoning information. \n\n"
+        err_message = "Failed to get `agent_messages` from the codex session. \n\n You can try to set `return_all_messages` to `True` to get the full reasoning information. \n\n " + err_message
 
     if success:
         result: Dict[str, Any] = {
